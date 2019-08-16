@@ -14,8 +14,6 @@ ilasm Mp3CoverDroper.il /DLL /OUTPUT=Mp3CoverDroper.dll /KEY=key.snk
 
 :: Backup dll
 cp ./Mp3CoverDroper.dll ./../../../build/Mp3CoverDroper.dll
-cp ./publish/Id3.Net.dll ./../../../build/Id3.Net.dll
-cp ./publish/JetBrains.Annotations.dll ./../../../build/JetBrains.Annotations.dll
 cp ./publish/SharpShell.dll ./../../../build/SharpShell.dll
 cd ../../..
 
