@@ -13,7 +13,7 @@ using System;
 public class Mp3CoverDroper : SharpDropHandler {
 
     private string[] supportImgExt = {".jpg", ".png", ".bmp", ".jpeg"};
-    private string app_path = "F:\\プログラム\\Mp3CoverDroper\\app\\bin\\Debug\\net48\\Mp3CoverDroperApp.exe";
+    private string app_path = "Mp3CoverDroperApp.exe";
 
     protected override void DragEnter(DragEventArgs dragEventArgs) {
         dragEventArgs.Effect =
@@ -23,6 +23,8 @@ public class Mp3CoverDroper : SharpDropHandler {
     }
 
     protected override void Drop(DragEventArgs dragEventArgs) {
+
+        // https://github.com/dwmkerr/sharpshell/issues/278
 
         // Flag:
         string[] args = {$"\"{SelectedItemPath}\""};

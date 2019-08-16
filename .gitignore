@@ -3,3 +3,5 @@ obj/
 key/
 build/
 tmp/
+
+!readme.md

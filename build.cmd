@@ -1,6 +1,7 @@
 @echo off
 
-:: Build dll
+:: Build service dll
+cd services
 rm bin/ obj/ -rf
 dotnet publish -c Release
 
@@ -21,5 +22,13 @@ cd ../../..
 regasm /codebase ./build/Mp3CoverDroper.dll
 
 :: regasm /u ./build/Mp3CoverDroper.dll
+
+:: Build app exe
+cd ../app
+rm bin/ obj/ -rf
+dotnet publish -c Release
+
+:: Move ./bin/Release/net48/Mp3CoverDroperApp.exe to PATH
+:: Or Modify DropHandlerService.cs app_path variable to the path of Mp3CoverDroperApp.exe
 
 @echo on
