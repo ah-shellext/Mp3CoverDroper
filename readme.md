@@ -78,7 +78,8 @@ regasm /u ./services/build/Mp3CoverDroper.dll
 ```
 
 ### Problem
-+ Nuget package `ID3` couln not add to GAC directly -> couldn't use `ID3` in `SharpDropHandler`
++ Nuget package `ID3` could not add to GAC directly -> couldn't use `ID3` in `SharpDropHandler`
++ `tag.Pictures.Clear()` may crash the music player -> 置き換える機能 has something wrong
 
 ![dllException](./assets/dllException.jpg)
 

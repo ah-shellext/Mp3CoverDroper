@@ -3,6 +3,7 @@ using System;
 using System.Windows.Forms;
 using Utils;
 using Id3.Frames;
+using Id3;
 
 class Program {
 
@@ -44,30 +45,37 @@ class Program {
     }
 
     private static void Produce(bool needClear, string mp3Path, string[] imgPaths) {
-        // MessageBox.Show(mp3Path + "\n\n\n" + string.Join("\n", imgPaths));
-        PictureFrameList pictureFrames = Mp3CoverUtil.GetMp3Cover(mp3Path);
-        if (needClear) {
-            if (!(Mp3CoverUtil.ClearMp3Cover(mp3Path))) {
-                Restore(mp3Path, pictureFrames, true);
-                return;
+        using (Mp3 mp3 = new Mp3(mp3Path, Mp3Permissions.ReadWrite)) {
+            PictureFrameList pictureFrames = Mp3CoverUtil.GetMp3Cover(mp3);
+            if (needClear) {
+                // ??
+                if (!(Mp3CoverUtil.ClearMp3Cover(mp3))) {
+                    Restore(mp3, pictureFrames, true);
+                    return;
+                }
             }
-        }
-        foreach (var img in imgPaths) {
-            if (!Mp3CoverUtil.AddCoverToMp3(mp3Path, img)) {
-                Restore(mp3Path, pictureFrames, false);
-                return;
+            foreach (var img in imgPaths) {
+                if (!Mp3CoverUtil.AddCoverToMp3(mp3, img)) {
+                    Restore(mp3, pictureFrames, false);
+                    return;
+                }
             }
+            MessageBox.Show($"{imgPaths.Count()}つ のカバーは追加しました。", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-        MessageBox.Show($"{imgPaths.Count()}つ のカバーは追加しました。", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
     
-    private static void Restore(string mp3Path, PictureFrameList pictureFrames, bool isDel) {
+    private static void Restore(Mp3 mp3, PictureFrameList pictureFrames, bool isDel) {
         string flag = isDel ? "削除" : "追加";
-        if (!Mp3CoverUtil.RestoreCover(mp3Path, pictureFrames)) { 
-            // Auth
-            MessageBox.Show($"mp3 ファイルのカバーの{ flag }は失敗しました、ファイル還元も失敗しました。");
-            return;
+        if (pictureFrames == null) {
+            MessageBox.Show($"mp3 ファイルのカバーの{ flag }は失敗しました。");
         }
-        MessageBox.Show($"mp3 ファイルのカバーの{ flag }は失敗しました、元のカバーを戻ります。");
+        else {
+            if (!Mp3CoverUtil.RestoreCover(mp3, pictureFrames)) { 
+                // Auth
+                MessageBox.Show($"mp3 ファイルのカバーの{ flag }は失敗しました、ファイル還元も失敗しました。");
+                return;
+            }
+            MessageBox.Show($"mp3 ファイルのカバーの{ flag }は失敗しました、元のカバーを戻ります。");
+        }
     }
 }
