@@ -12,7 +12,7 @@ namespace Utils
 
     public class MessageBoxEx
     {
-        public static DialogResult Show(string text, string caption, MessageBoxButtons buttons, string[] buttonTitles = null)
+        public static DialogResult Show(string text, string caption, MessageBoxButtons buttons = MessageBoxButtons.OK, string[] buttonTitles = null)
         {
             return Show(text, caption, buttons, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, buttonTitles);
         }
@@ -24,6 +24,7 @@ namespace Utils
             frm.Opacity = 0;
             frm.Show();
             frm.WatchForActivate = true;
+            frm.TopMost = true;
             DialogResult result = MessageBox.Show(frm, text, caption, buttons, icon, defaultButton);
             frm.Close();
 
