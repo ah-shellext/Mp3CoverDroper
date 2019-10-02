@@ -7,6 +7,7 @@ using System.Windows.Forms;
 namespace Utils
 {
     public class AdminUtil {
+        
          /// <summary>
         /// Check have administrator authority
         /// </summary>
@@ -19,12 +20,7 @@ namespace Utils
         /// <summary>
         /// Get administrator authority
         /// </summary>
-        public static void getAdmin(bool needClear, string mp3Path, string[] imgPaths) {
-            string flag = needClear ? "true" : "false";
-            string[] args = {$"\"{flag}\" \"{mp3Path}\""};
-            foreach (var imgPath in imgPaths) 
-                args = args.Append($"\"{imgPath}\"").ToArray();
-            
+        public static void getAdmin(string[] args) {
             ProcessStartInfo psi = new ProcessStartInfo();
             psi.FileName = Application.ExecutablePath;
             psi.Arguments = string.Join(" ", args);

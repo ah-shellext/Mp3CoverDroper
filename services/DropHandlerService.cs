@@ -32,6 +32,8 @@ public class Mp3CoverDroper : SharpDropHandler {
             args = args.Append($"\"{imgPath}\"").ToArray();
         }
 
+        // Mp3CoverDroperApp.exe $PATH $IMGs
+
         // Process:
         Process process = new Process();
         var info = new ProcessStartInfo(app_path, string.Join(" ", args));

@@ -16,18 +16,24 @@ class Program {
         Application.SetCompatibleTextRenderingDefault(false);
 
         // Flag:
-        if (args.Length <= 1)
-            PrintHelp();
+
+        bool isTFFlag = args[0] == "true" || args[0] == "false";
+        if ((isTFFlag && args.Length <= 2) || args.Length <= 1) {
+            ShowHelp();
+            return;
+        }
 
         string mp3Path;
         string[] imgPaths;
 
-        if (args[0] == "true" || args[0] == "false") {
+        if (isTFFlag) {
+            // Mp3CoverDroperApp.exe true $PATH $IMGs
             mp3Path = args[1];
             imgPaths = args.Except(new string[] { args[0], args[1] }).ToArray();
             Produce(args[0] == "true", mp3Path, imgPaths.ToArray());
         } 
         else {
+            // Mp3CoverDroperApp.exe $PATH $IMGs
             mp3Path = args[0];
             imgPaths = args.Except(new string[] { args[0] }).ToArray();
  
@@ -50,10 +56,13 @@ class Program {
         }
     }
 
-    static void PrintHelp() {
+    static void ShowHelp() {
         Utils.MessageBoxEx.Show($"Usage: {appPath} $Mp3Path $ImgPaths", "エラー");
     }
 
+    /// <summary>
+    /// Handle mp3 file
+    /// </summary>
     private static void Produce(bool needClear, string mp3Path, string[] imgPaths) {
         Mp3 mp3;
         try {
@@ -61,40 +70,51 @@ class Program {
         }
         catch (Exception) {
             if (!Utils.AdminUtil.isAdmin()) {
-                Utils.AdminUtil.getAdmin(needClear, mp3Path, imgPaths);
+                string flag = needClear ? "true" : "false";
+                string[] args = {$"\"{flag}\" \"{mp3Path}\""};
+                foreach (var imgPath in imgPaths) 
+                    args = args.Append($"\"{imgPath}\"").ToArray();
+                
+                Utils.AdminUtil.getAdmin(args);
                 return;
             }
             else throw;
         }
 
-        PictureFrameList pictureFrames = Mp3CoverUtil.GetMp3Cover(mp3);
+        // backup
+        PictureFrameList pictureFrames = CoverUtil.GetMp3Cover(mp3);
         
-        string msg = $"{imgPaths.Count()}つ のカバーは追加しました。";
+        string msg = $"{imgPaths.Count()}つ のカバーは${(needClear ? "追加し" : "置き換え")}ました。";
+
         if (needClear) {
-            // ??
-            msg = $"{imgPaths.Count()}つ のカバーは置き換えました。";
-            if (!(Mp3CoverUtil.ClearMp3Cover(mp3))) {
+            if (!(CoverUtil.ClearMp3Cover(mp3))) {
                 Restore(mp3, pictureFrames, true);
                 return;
             }
         }
+
         foreach (var img in imgPaths) {
-            if (!Mp3CoverUtil.AddCoverToMp3(mp3, img)) {
+            // !!!
+            if (!CoverUtil.AddCoverToMp3(mp3, img)) {
                 Restore(mp3, pictureFrames, false);
                 return;
             }
         }
+
         MessageBox.Show(msg, "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
         mp3.Dispose();
     }
     
+    /// <summary>
+    /// File handle failed
+    /// </summary>  
     private static void Restore(Mp3 mp3, PictureFrameList pictureFrames, bool isDel) {
         string flag = isDel ? "削除" : "追加";
         if (pictureFrames == null) {
             MessageBox.Show($"mp3 ファイルのカバーの{ flag }は失敗しました。");
         }
         else {
-            if (!Mp3CoverUtil.RestoreCover(mp3, pictureFrames)) { 
+            if (!CoverUtil.RestoreCover(mp3, pictureFrames)) { 
                 // Auth
                 MessageBox.Show($"mp3 ファイルのカバーの{ flag }は失敗しました、ファイル還元も失敗しました。");
                 return;

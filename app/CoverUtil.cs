@@ -7,7 +7,7 @@ using Id3.Frames;
 namespace Utils
 {
 
-    public class Mp3CoverUtil {
+    public class CoverUtil {
 
         /// <summary>
         /// Get Mp3 File's Covers Backup
@@ -38,22 +38,22 @@ namespace Utils
         }
 
         /// <summary>
-        /// Clear Mp3 File's All Covers
+        /// Clear Mp3 File's All Covers !!!
         /// </summary>
         public static bool ClearMp3Cover(Mp3 mp3) {
             Id3Tag tag = mp3.GetTag(Id3TagFamily.Version2X);
 
             if (tag.Pictures != null) {
-                // tag.Remove<Id3.Frames.PictureFrame>();
                 tag.Pictures.Clear();
             }
-            // Ex
+            
+            mp3.DeleteTag(Id3TagFamily.Version2X);
             return mp3.UpdateTag(tag);
             // return mp3.WriteTag(tag, WriteConflictAction.Replace);
         }
 
         /// <summary>
-        /// Add Image As Cover To Mp3 File
+        /// Add Image As Cover To Mp3 File !!!
         /// </summary>
         public static bool AddCoverToMp3(Mp3 mp3, string imgPath) {
             Id3Tag tag = mp3.GetTag(Id3TagFamily.Version2X);
@@ -62,7 +62,7 @@ namespace Utils
             newCover.LoadImage(imgPath);
             tag.Pictures.Add(newCover);
 
-            // Ex
+
             return mp3.UpdateTag(tag);
         }
     }

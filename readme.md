@@ -34,6 +34,8 @@ dotnet add package System.Drawing.Common
 + Service
 
 ```bash
+# register.cmd
+
 cd services
 
 # Build service dll
@@ -60,6 +62,8 @@ regasm /codebase ./Mp3CoverDroper.dll
 + App
 
 ```bash
+# build.cmd
+
 cd app
 
 # Build app exe
@@ -72,14 +76,15 @@ dotnet publish -c Release
 
 ### UnRegister
 ```bash
+# unregister.cmd
+
 regasm /u ./services/build/Mp3CoverDroper.dll
 
 # Restart explorer.exe
 ```
 
 ### Problem
-+ Nuget package `ID3` could not add to GAC directly -> couldn't use `ID3` in `SharpDropHandler`
-+ `tag.Pictures.Clear()` may crash the music player -> 置き換える機能 has something wrong
++ Nuget package `ID3` could not add to GAC directly -> couldn't use `ID3` directly in `SharpDropHandler`
 
 ![dllException](./assets/dllException.jpg)
 
