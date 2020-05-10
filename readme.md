@@ -1,45 +1,48 @@
 # Mp3CoverDroper
-+ Windows Shell Extension
-+ Personal tool to update mp3 cover through drag and drop files
+
++ A windows shell extension
++ Personal tool to update mp3's cover by dragging and dropping files
 
 ### Environment
+
 + `.NET Core cli 2.2.401`
 + `.NET Framework 4.8`
 + `VS Code`
 + `Windows 10 Version 1803`
 
 ### Path
+
 + `Program Files\Microsoft SDKs\Windows\vx.xA\bin\NETFX x.x.x Tools` -> `sn.exe` / `ildasm.exe`
 + `Windows\Microsoft.NET\Framework64\vx.x.x` -> `ilasm.exe` / `regasm.exe`
 + ( `PATH` -> `Mp3CoverDroperApp.exe` )
 
-### Depedences
+### Dependencies
+
 + Service
 
 ```bash
-# Add depedence
 dotnet add package SharpShell
 ```
 
 + App
 
 ```bash
-# Add depedence
 dotnet add package ID3
 dotnet add package System.Windows.Forms
 dotnet add package System.Drawing.Common
 ```
 
-### Build
-+ Service
+### Install
+
++ Service (for drag and drop)
 
 ```bash
-# register.cmd
-
-cd services
+# register.bat
 
 # Build service dll
+cd services/
 rm bin/ obj/ -rf
+
 dotnet publish -c Release
 
 # Generate Key
@@ -53,30 +56,31 @@ ilasm Mp3CoverDroper.il /DLL /OUTPUT=Mp3CoverDroper.dll /KEY=key.snk
 # Backup dll
 cp ./Mp3CoverDroper.dll ./../../../build/Mp3CoverDroper.dll
 cp ./publish/SharpShell.dll ./../../../build/SharpShell.dll
-cd ../../../build
+cd ../../..
 
 # Register
-regasm /codebase ./Mp3CoverDroper.dll
+regasm /codebase ./build/Mp3CoverDroper.dll
+
+cd ..
 ```
 
-+ App
++ App (for main function and admin)
 
 ```bash
-# build.cmd
+# build.bat
 
-cd app
-
-# Build app exe
-rm bin/ obj/ -rf
-dotnet publish -c Release
+# Build Mp3CoverDroperApp.exe
+rm app/bin/ app/obj/ -rf
+dotnet publish app/ -c Release
 
 # Move ./bin/Release/net48/Mp3CoverDroperApp.exe to PATH
-# Or modify DropHandlerService.cs app_path variable to the path of Mp3CoverDroperApp.exe
+# Or Modify DropHandlerService.cs app_path variable to the path of Mp3CoverDroperApp.exe
 ```
 
-### UnRegister
+### Uninstall
+
 ```bash
-# unregister.cmd
+# unregister.bat
 
 regasm /u ./services/build/Mp3CoverDroper.dll
 
@@ -84,15 +88,18 @@ regasm /u ./services/build/Mp3CoverDroper.dll
 ```
 
 ### Problem
+
 + Nuget package `ID3` could not add to GAC directly -> couldn't use `ID3` directly in `SharpDropHandler`
 
 ![dllException](./assets/dllException.jpg)
 
-### ScreenShot
+### Screenshots
 
-![desktop](./assets/desktop.jpg) ![dialog](./assets/dialog.jpg)
+|![desktop](./assets/desktop.jpg)|![dialog](./assets/dialog.jpg)|
+|:---:|:---:|
 
 ### References
+
 + [Shell Drop Handlers](http://www.codeproject.com/Articles/529515/NET-Shell-Extensions-Shell-Drop-Handlers)
 + [Id3](https://github.com/JeevanJames/Id3)
 + [C#自定义MessageBox 按钮的Text](https://www.cnblogs.com/code1992/p/9719856.html)

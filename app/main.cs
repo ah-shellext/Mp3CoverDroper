@@ -16,83 +16,83 @@ class Program {
         Application.SetCompatibleTextRenderingDefault(false);
 
         // Flag:
-
-        bool isTFFlag = args[0] == "true" || args[0] == "false";
-        if ((isTFFlag && args.Length <= 2) || args.Length <= 1) {
+        if (args.Length <= 1) {
+            ShowHelp();
+            return;
+        }
+        bool isFlag = args[0] == "true" || args[0] == "false";
+        bool isOverwrite = args[0] == "true";
+        if (isFlag && args.Length <= 2) {
             ShowHelp();
             return;
         }
 
-        string mp3Path;
-        string[] imgPaths;
-
-        if (isTFFlag) {
-            // Mp3CoverDroperApp.exe true $PATH $IMGs
-            mp3Path = args[1];
-            imgPaths = args.Except(new string[] { args[0], args[1] }).ToArray();
-            Produce(args[0] == "true", mp3Path, imgPaths.ToArray());
+        if (isFlag) {
+            // Mp3CoverDroperApp.exe true $PATH [$IMG]
+            string mp3Path = args[1];
+            string[] imgPaths = args.Except(new string[] { args[0], args[1] }).ToArray();
+            Handle(isOverwrite, mp3Path, imgPaths);
         } 
         else {
-            // Mp3CoverDroperApp.exe $PATH $IMGs
-            mp3Path = args[0];
-            imgPaths = args.Except(new string[] { args[0] }).ToArray();
+            // Mp3CoverDroperApp.exe $PATH [$IMG]
+            string mp3Path = args[0];
+            string[] imgPaths = args.Except(new string[] { args[0] }).ToArray();
  
-            // Msgbox:
             DialogResult ok = Utils.MessageBoxEx.Show(
                 $"\"{mp3Path}\" に選択した {imgPaths.Count()}つ のイメージをカバーとして追加しますか、またはカバーを全部置き換えますか？",
-                "カバー編集",
-                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1,
+                "カバー編集", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1,
                 new string[] { "追加する", "置き換える", "キャンセル" }
             );
-
-            // Handle:
-            if (ok == DialogResult.Cancel) return;
-            try {
-                Produce(ok == DialogResult.No, mp3Path, imgPaths.ToArray());
+            if (ok == DialogResult.Cancel) {
+                return;
             }
-            catch (Exception ex) {
-                MessageBox.Show(ex.ToString());
+            try {
+                Handle(ok == DialogResult.No, mp3Path, imgPaths);
+            } catch (Exception ex) {
+                MessageBox.Show(ex.ToString(), "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
 
+    /// <summary>
+    /// args show help
+    /// </summary>
     static void ShowHelp() {
         Utils.MessageBoxEx.Show($"Usage: {appPath} $Mp3Path $ImgPaths", "エラー");
     }
 
     /// <summary>
-    /// Handle mp3 file
+    /// handle mp3 file
     /// </summary>
-    private static void Produce(bool needClear, string mp3Path, string[] imgPaths) {
+    private static void Handle(bool needClear, string mp3Path, string[] imgPaths) {
         Mp3 mp3;
         try {
             mp3 = new Mp3(mp3Path, Mp3Permissions.ReadWrite);
-        }
-        catch (Exception) {
+        } catch (Exception) {
             if (!Utils.AdminUtil.isAdmin()) {
                 string flag = needClear ? "true" : "false";
                 string[] args = {$"\"{flag}\" \"{mp3Path}\""};
-                foreach (var imgPath in imgPaths) 
+                foreach (var imgPath in imgPaths) {
                     args = args.Append($"\"{imgPath}\"").ToArray();
-                
-                Utils.AdminUtil.getAdmin(args);
+                }
+                try {
+                    Utils.AdminUtil.getAdmin(args);
+                } catch (Exception ex) {
+                    MessageBox.Show(ex.Message, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
                 return;
+            } else {
+                throw;
             }
-            else throw;
         }
 
         // backup
         PictureFrameList pictureFrames = CoverUtil.GetMp3Cover(mp3);
-        
-        string msg = $"{imgPaths.Count()}つ のカバーは${(needClear ? "追加し" : "置き換え")}ました。";
 
-        if (needClear) {
-            if (!(CoverUtil.ClearMp3Cover(mp3))) {
-                Restore(mp3, pictureFrames, true);
-                return;
-            }
+        if (needClear && !(CoverUtil.ClearMp3Cover(mp3))) {
+            Restore(mp3, pictureFrames, true);
+            return;
         }
-
         foreach (var img in imgPaths) {
             // !!!
             if (!CoverUtil.AddCoverToMp3(mp3, img)) {
@@ -101,7 +101,7 @@ class Program {
             }
         }
 
-        MessageBox.Show(msg, "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        MessageBox.Show($"{imgPaths.Count()}つのカバー{(needClear ? "を追加し" : "に置き換え")}ました。", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
         mp3.Dispose();
     }
     
@@ -109,17 +109,15 @@ class Program {
     /// File handle failed
     /// </summary>  
     private static void Restore(Mp3 mp3, PictureFrameList pictureFrames, bool isDel) {
-        string flag = isDel ? "削除" : "追加";
+        string action = isDel ? "削除" : "追加";
+        string flag = "";
         if (pictureFrames == null) {
-            MessageBox.Show($"mp3 ファイルのカバーの{ flag }は失敗しました。");
+            flag = $"mp3 ファイルのカバーの{ action }は失敗しました。";
+        } else if (!CoverUtil.RestoreCover(mp3, pictureFrames)) { 
+            flag = $"mp3 ファイルのカバーの{ action }は失敗しましたが、ファイル還元も失敗しました。";
+        } else {
+            flag = $"mp3 ファイルのカバーの{ action }は失敗しましたが、元のカバーを戻りました。";
         }
-        else {
-            if (!CoverUtil.RestoreCover(mp3, pictureFrames)) { 
-                // Auth
-                MessageBox.Show($"mp3 ファイルのカバーの{ flag }は失敗しました、ファイル還元も失敗しました。");
-                return;
-            }
-            MessageBox.Show($"mp3 ファイルのカバーの{ flag }は失敗しました、元のカバーを戻ります。");
-        }
+        MessageBox.Show(flag, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 }

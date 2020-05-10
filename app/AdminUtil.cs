@@ -21,17 +21,13 @@ namespace Utils
         /// Get administrator authority
         /// </summary>
         public static void getAdmin(string[] args) {
-            ProcessStartInfo psi = new ProcessStartInfo();
-            psi.FileName = Application.ExecutablePath;
-            psi.Arguments = string.Join(" ", args);
-            psi.Verb = "runas";
-            try {
-                Process.Start(psi);
-                Application.Exit();
-            }
-            catch (Exception ex) {
-                MessageBox.Show(ex.Message);
-            }
+            ProcessStartInfo psi = new ProcessStartInfo {
+                FileName = Application.ExecutablePath,
+                Arguments = string.Join(" ", args),
+                Verb = "runas"
+            };
+            Process.Start(psi);
+            Application.Exit();
         }
     }
 }

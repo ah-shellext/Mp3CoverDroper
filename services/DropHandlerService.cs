@@ -17,9 +17,9 @@ public class Mp3CoverDroper : SharpDropHandler {
 
     protected override void DragEnter(DragEventArgs dragEventArgs) {
         dragEventArgs.Effect =
-            DragItems.All(
-                di => supportImgExt.Contains(Path.GetExtension(di))
-            ) ? DragDropEffects.Link : DragDropEffects.None;
+            DragItems.All(di => supportImgExt.Contains(Path.GetExtension(di))) 
+                ? DragDropEffects.Link
+                : DragDropEffects.None;
     }
 
     protected override void Drop(DragEventArgs dragEventArgs) {
@@ -32,9 +32,7 @@ public class Mp3CoverDroper : SharpDropHandler {
             args = args.Append($"\"{imgPath}\"").ToArray();
         }
 
-        // Mp3CoverDroperApp.exe $PATH $IMGs
-
-        // Process:
+        // Mp3CoverDroperApp.exe $PATH [$IMG]
         Process process = new Process();
         var info = new ProcessStartInfo(app_path, string.Join(" ", args));
         process.StartInfo = info;

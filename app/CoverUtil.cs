@@ -62,7 +62,6 @@ namespace Utils
             newCover.LoadImage(imgPath);
             tag.Pictures.Add(newCover);
 
-
             return mp3.UpdateTag(tag);
         }
     }

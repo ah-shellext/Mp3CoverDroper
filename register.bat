@@ -1,7 +1,7 @@
 @echo off
 
 :: Build service dll
-cd services
+cd services/
 rm bin/ obj/ -rf
 
 dotnet publish -c Release

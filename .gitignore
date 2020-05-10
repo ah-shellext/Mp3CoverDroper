@@ -1,7 +1,12 @@
+### Editor ###
+.vscode/
+.ionide/
+.history/
+.idea/
+
+### Build ###
 bin/
 obj/
 key/
 build/
 tmp/
-
-!readme.md
