@@ -3,10 +3,19 @@
 .ionide/
 .history/
 .idea/
+.vs/
 
 ### Build ###
-bin/
-obj/
+[Bb]uild/
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Ww]in32/
+[Ww]in64/
+[Xx]86/
+[Xx]64/
+
+### Project ###
 key/
-build/
 tmp/
