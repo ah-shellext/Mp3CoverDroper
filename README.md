@@ -6,3 +6,4 @@
 ### Dependencies
 
 + `SharpShell 2.7.2`
++ `ID3 0.6.0`
