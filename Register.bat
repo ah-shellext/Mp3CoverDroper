@@ -5,7 +5,7 @@ cd Mp3CoverDroper.Extension
 
 :: Generate Key
 cd bin\x64\Release
-sn -k key.snk
+if not exist "key.snk" sn -k key.snk
 
 :: Recompile
 ildasm Mp3CoverDroper.Extension.dll /OUTPUT=Mp3CoverDroper.Extension.il
@@ -13,8 +13,7 @@ ilasm Mp3CoverDroper.Extension.il /DLL /OUTPUT=Mp3CoverDroper.Extension.dll /KEY
 
 :: Backup dll
 if not exist "..\..\..\build" mkdir ..\..\..\build
-cp Mp3CoverDroper.Extension.dll     ..\..\..\build\Mp3CoverDroper.Extension.dll
-cp SharpShell.dll                   ..\..\..\build\SharpShell.dll
+cp *.dll ..\..\..\build
 cd ..\..\..\build
 
 :: Register

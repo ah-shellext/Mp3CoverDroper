@@ -13,7 +13,7 @@ namespace Mp3CoverDroper.Extension {
     [COMServerAssociation(AssociationType.ClassOfExtension, ".mp3")]
     public class Extension : SharpDropHandler {
 
-        private readonly string[] supportedImageExtensions = { ".jpg", ".jpeg", ".png", ".bmp" };
+        private readonly string[] supportedImageExtensions = { ".jpg", ".jpeg", ".png" };
 
         protected override void DragEnter(DragEventArgs dragEventArgs) {
             var supported = DragItems.All(di => supportedImageExtensions.Contains(Path.GetExtension(di).ToLower()));
@@ -33,14 +33,14 @@ namespace Mp3CoverDroper.Extension {
             var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\AoiHosizora\Mp3CoverDroper");
             if (key == null) {
                 MessageBox.Show(new Form { TopMost = true }, @"You have not set Mp3CoverDroper's registry setting, please check the Implementation key from HKEY_CURRENT_USER\SOFTWARE\AoiHosizora\Mp3CoverDroper.",
-                    "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                   "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             var executablePath = key.GetValue("Implementation") as string;
             executablePath = executablePath.Trim('"');
             if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath)) {
                 MessageBox.Show(new Form { TopMost = true }, @"Mp3CoverDroper's implementation application file is not found, please check the Implementation key from HKEY_CURRENT_USER\SOFTWARE\AoiHosizora\Mp3CoverDroper.",
-                    "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                   "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 

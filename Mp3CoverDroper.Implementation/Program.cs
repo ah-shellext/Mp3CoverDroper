@@ -1,15 +1,17 @@
 ﻿using Id3;
 using Id3.Frames;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using System.Windows.Forms;
 
 namespace Mp3CoverDroper.Implementation {
 
     public class Program {
 
-        private static readonly string[] supportedImageExtensions = { ".jpg", ".jpeg", ".png", ".bmp" };
+        private static readonly string[] supportedImageExtensions = { ".jpg", ".jpeg", ".png" };
 
         static void Main(string[] args) {
             Application.EnableVisualStyles();
@@ -41,6 +43,18 @@ namespace Mp3CoverDroper.Implementation {
             try {
                 mp3 = new Mp3(mp3Path, Mp3Permissions.ReadWrite);
             } catch (Exception ex) {
+                var principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+                if (!principal.IsInRole(WindowsBuiltInRole.Administrator)) {  // not in admin
+                    // try to get admin authority
+                    ProcessStartInfo psi = new ProcessStartInfo {
+                        FileName = Application.ExecutablePath,
+                        Arguments = string.Join(" ", args),
+                        Verb = "runas"
+                    };
+                    Process.Start(psi);
+                    return;
+                }
+
                 ShowError($"Failed to read mp3 file. Details:\n{ex}");
                 return;
             }
@@ -50,15 +64,17 @@ namespace Mp3CoverDroper.Implementation {
                 MainProcess(mp3, mp3Path, imagePaths);
             } catch (Exception ex) {
                 ShowError($"Failed to execute the option. Details:\n{ex}");
+            } finally {
+                mp3.Dispose();
             }
         }
 
         private static void ShowHelp() {
-            MessageBox.Show(new Form { TopMost = true }, $"Usage: {AppDomain.CurrentDomain.FriendlyName} [mp3 path] [image paths...]", "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBoxEx.Show($"Usage: {AppDomain.CurrentDomain.FriendlyName} [mp3 path] [image paths...]", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private static void ShowError(string message) {
-            MessageBox.Show(new Form { TopMost = true }, message, "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBoxEx.Show(message, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private static void MainProcess(Mp3 mp3, string mp3Path, string[] images) {
@@ -75,13 +91,22 @@ namespace Mp3CoverDroper.Implementation {
             bool removeFirst;
             var originCoverCount = tag.Pictures.Count;
             if (originCoverCount == 0) {
-                var ok = MessageBox.Show(new Form { TopMost = true }, $"There is no cover in the given mp3 file, would you want to add the given {images.Length} cover(s) to this mp3 file?",
-                    "Mp3CoverDroper", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
-                addCover = ok == DialogResult.Yes;
+                MessageBoxManager.OK = "Add";
+                MessageBoxManager.Cancel = "Cancel";
+                MessageBoxManager.Register();
+                var ok = MessageBoxEx.Show($"There is no cover in the given mp3 file, would you want to add the given {images.Length} cover(s) to this mp3 file?",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
+                MessageBoxManager.Unregister();
+                addCover = ok == DialogResult.OK;
                 removeFirst = false;
             } else {
-                var ok = MessageBox.Show(new Form { TopMost = true }, $"The mp3 file has {originCoverCount} cover(s), would you want to remove it first, and add the given {images.Length} cover(s) to this mp3 file?",
-                    "Mp3CoverDroper", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
+                MessageBoxManager.Yes = "Replace";
+                MessageBoxManager.No = "Append";
+                MessageBoxManager.Cancel = "Cancel";
+                MessageBoxManager.Register();
+                var ok = MessageBoxEx.Show($"The mp3 file has {originCoverCount} cover(s), would you want to remove it first, and add the given {images.Length} cover(s) to this mp3 file?",
+                      MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
+                MessageBoxManager.Unregister();
                 addCover = ok != DialogResult.Cancel;
                 removeFirst = ok == DialogResult.Yes;
             }
@@ -94,7 +119,17 @@ namespace Mp3CoverDroper.Implementation {
                 tag.Pictures.Clear();
             }
             foreach (var image in images) {
-                var newCover = new PictureFrame();
+                var extension = Path.GetExtension(image).ToLower();
+                var mime = "image/";
+                if (extension == ".png") {
+                    mime = "image/png";
+                } else if (extension == ".jpg" || extension == ".jpeg") {
+                    mime = "image/jpeg";
+                }
+                var newCover = new PictureFrame() {
+                    PictureType = PictureType.FrontCover,
+                    MimeType = mime
+                };
                 try {
                     newCover.LoadImage(image);
                 } catch (Exception ex) {
@@ -106,7 +141,7 @@ namespace Mp3CoverDroper.Implementation {
 
             // write tag
             mp3.DeleteTag(Id3TagFamily.Version2X);
-            if (!mp3.UpdateTag(tag)) {
+            if (!mp3.WriteTag(tag, Id3Version.V23, WriteConflictAction.Replace)) {
                 ShowError($"Failed to write cover(s) to mp3 file.");
                 return;
             }
@@ -119,7 +154,7 @@ namespace Mp3CoverDroper.Implementation {
             } else {
                 msg = $"Success to add {images.Length} cover(s) to mp3 file \"{mp3Path}\".";
             }
-            MessageBox.Show(new Form { TopMost = true }, msg, "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBoxEx.Show(msg, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

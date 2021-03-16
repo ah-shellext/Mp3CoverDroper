@@ -34,22 +34,53 @@ dotnet msbuild -property:Configuration=Release -property:Platform=x64
 
 ### Register
 
-+ Note that you need to add `sn.exe` `ildasm.exe` (Program Files\Microsoft SDKs\Windows\vx.xA\bin\NETFX x.x Tools) and `ilasm.exe` `regasm.exe` (Windows\Microsoft.NET\Framework64\vx.x.x) to PATH.
-+ Open cmd as administrator.
++ Note that you need to add the following into PATH.
+    + `sn.exe` `ildasm.exe` (Program Files\Microsoft SDKs\Windows\vx.xA\bin\NETFX x.x Tools)
+    + `ilasm.exe` `regasm.exe` (Windows\Microsoft.NET\Framework64\vx.x.x)
++ Open cmd as administrator, and may need to restart explorer.exe.
 
 ```bash
-# Register dll
 Register.bat
 # or execute the following commands
+
 cd Mp3CoverDroper.Extension\bin\x64\Release
 sn -k key.snk # generate key
 ildasm Mp3CoverDroper.Extension.dll /OUTPUT=Mp3CoverDroper.Extension.il
 ilasm Mp3CoverDroper.Extension.il /DLL /OUTPUT=Mp3CoverDroper.Extension.dll /KEY=key.snk # add key to dll
 regasm /codebase Mp3CoverDroper.Extension.dll # register (note that before replace the dll, you need to unregister it)
+```
 
-# Unregister dll
++ Finally, setup registry for Mp3CoverDroper.Implementation.
+
+```reg
+; Use RegisterImpl.reg
+
+; Note to replace to your Mp3CoverDroper.Implementation.exe path.
+[HKEY_CURRENT_USER\SOFTWARE\AoiHosizora\Mp3CoverDroper]
+"Implementation"="\"E:\\Projects\\Mp3CoverDroper\\Mp3CoverDroper.Implementation\\bin\\x64\\Release\\Mp3CoverDroper.Implementation.exe\""
+```
+
+### Unregister
+
++ Open cmd as administrator.
+
+```bash
 Unregister.bat
 # or execute the following commands
+
 cd Mp3CoverDroper.Extension\bin\x64\Release
 regasm /u Mp3CoverDroper.Extension.dll # unregister
 ```
+
+### Screenshots
+
+|![screenshot1](./assets/screenshot1.png)|![screenshot2](./assets/screenshot2.png)|![screenshot3](./assets/screenshot3.png)|
+|---|---|---|
+
+### References
+
++ [dwmkerr/sharpshell](https://github.com/dwmkerr/sharpshell)
++ [JeevanJames/Id3](https://github.com/JeevanJames/Id3)
++ [Shell Drop Handlers](http://www.codeproject.com/Articles/529515/NET-Shell-Extensions-Shell-Drop-Handlers)
++ [Install with regasm (using the GAC)](https://github.com/dwmkerr/sharpshell/blob/master/docs/installing/installing.md#install-using-the-gac)
++ [Are there limits in using more external libraries?](https://github.com/dwmkerr/sharpshell/issues/278)
