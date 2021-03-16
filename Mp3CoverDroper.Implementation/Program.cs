@@ -54,7 +54,6 @@ namespace Mp3CoverDroper.Implementation {
                     Process.Start(psi);
                     return;
                 }
-
                 ShowError($"Failed to read mp3 file. Details:\n{ex}");
                 return;
             }
@@ -91,22 +90,13 @@ namespace Mp3CoverDroper.Implementation {
             bool removeFirst;
             var originCoverCount = tag.Pictures.Count;
             if (originCoverCount == 0) {
-                MessageBoxManager.OK = "Add";
-                MessageBoxManager.Cancel = "Cancel";
-                MessageBoxManager.Register();
                 var ok = MessageBoxEx.Show($"There is no cover in the given mp3 file, would you want to add the given {images.Length} cover(s) to this mp3 file?",
-                    MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
-                MessageBoxManager.Unregister();
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation, new string[] { "&Add", "&Cancel" });
                 addCover = ok == DialogResult.OK;
                 removeFirst = false;
             } else {
-                MessageBoxManager.Yes = "Replace";
-                MessageBoxManager.No = "Append";
-                MessageBoxManager.Cancel = "Cancel";
-                MessageBoxManager.Register();
                 var ok = MessageBoxEx.Show($"The mp3 file has {originCoverCount} cover(s), would you want to remove it first, and add the given {images.Length} cover(s) to this mp3 file?",
-                      MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
-                MessageBoxManager.Unregister();
+                      MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation, new string[] { "&Replace", "&Append", "&Cancel" });
                 addCover = ok != DialogResult.Cancel;
                 removeFirst = ok == DialogResult.Yes;
             }
