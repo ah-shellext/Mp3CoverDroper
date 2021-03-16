@@ -5,9 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Implementation {
+namespace Mp3CoverDroper.Implementation {
 
-    class Program {
+    public class Program {
 
         private static readonly string[] supportedImageExtensions = { ".jpg", ".jpeg", ".png", ".bmp" };
 
@@ -24,11 +24,11 @@ namespace Implementation {
             var mp3Path = args[0];
             var imagePaths = args.Skip(1).ToArray();
             if (Path.GetExtension(mp3Path).ToLower() != ".mp3") {
-                ShowError("The given mp3 file has a non-mp3 extension.");
+                ShowError("The given mp3 file has a non mp3 extension.");
                 return;
             }
             if (!imagePaths.All(path => supportedImageExtensions.Contains(Path.GetExtension(path).ToLower()))) {
-                ShowError("There are some images that are not supported.");
+                ShowError("There are some images which has a non supported extension.");
                 return;
             }
             if (!File.Exists(mp3Path) || !imagePaths.All(path => File.Exists(path))) {
@@ -47,25 +47,27 @@ namespace Implementation {
 
             // process the mp3 file
             try {
-                MainProcess(mp3, imagePaths);
+                MainProcess(mp3, mp3Path, imagePaths);
             } catch (Exception ex) {
                 ShowError($"Failed to execute the option. Details:\n{ex}");
             }
         }
 
         private static void ShowHelp() {
-            MessageBox.Show($"Usage: {AppDomain.CurrentDomain.FriendlyName} [mp3 path] [image paths...]", "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(new Form { TopMost = true }, $"Usage: {AppDomain.CurrentDomain.FriendlyName} [mp3 path] [image paths...]", "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private static void ShowError(string message) {
-            MessageBox.Show(message, "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(new Form { TopMost = true }, message, "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private static void MainProcess(Mp3 mp3, string[] images) {
+        private static void MainProcess(Mp3 mp3, string mp3Path, string[] images) {
             var tag = mp3.GetTag(Id3TagFamily.Version2X);
             if (tag == null) {
                 tag = new Id3Tag();
-                mp3.WriteTag(tag, Id3Version.V23, WriteConflictAction.Replace);
+                if (!mp3.WriteTag(tag, Id3Version.V23, WriteConflictAction.Replace)) {
+                    ShowError($"Failed to create tag to mp3 file.");
+                }
             }
 
             // ask option
@@ -73,12 +75,12 @@ namespace Implementation {
             bool removeFirst;
             var originCoverCount = tag.Pictures.Count;
             if (originCoverCount == 0) {
-                var ok = MessageBox.Show($"There is no cover in the given mp3 file, would you want to add the given {images.Length} cover(s) to this mp3 file?",
+                var ok = MessageBox.Show(new Form { TopMost = true }, $"There is no cover in the given mp3 file, would you want to add the given {images.Length} cover(s) to this mp3 file?",
                     "Mp3CoverDroper", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
                 addCover = ok == DialogResult.Yes;
                 removeFirst = false;
             } else {
-                var ok = MessageBox.Show($"The mp3 file has {originCoverCount} cover(s), would you want to remove it first, and add the given {images.Length} cover(s) to this mp3 file?",
+                var ok = MessageBox.Show(new Form { TopMost = true }, $"The mp3 file has {originCoverCount} cover(s), would you want to remove it first, and add the given {images.Length} cover(s) to this mp3 file?",
                     "Mp3CoverDroper", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
                 addCover = ok != DialogResult.Cancel;
                 removeFirst = ok == DialogResult.Yes;
@@ -96,7 +98,7 @@ namespace Implementation {
                 try {
                     newCover.LoadImage(image);
                 } catch (Exception ex) {
-                    ShowError($"Failed to load image {image}. Details:\n{ex}");
+                    ShowError($"Failed to load image: \"{image}\". Details:\n{ex}");
                     return;
                 }
                 tag.Pictures.Add(newCover);
@@ -111,13 +113,13 @@ namespace Implementation {
 
             string msg;
             if (removeFirst) {
-                msg = $"Success to remove {originCoverCount} cover(s) and add {images.Length} cover(s) to mp3 file.";
+                msg = $"Success to remove {originCoverCount} cover(s) and add {images.Length} cover(s) to mp3 file \"{mp3Path}\".";
             } else if (originCoverCount != 0) {
-                msg = $"Success to add {images.Length} cover(s), now there are {images.Length + originCoverCount} covers in the mp3 file.";
+                msg = $"Success to add {images.Length} cover(s), now there are {images.Length + originCoverCount} covers in the mp3 file \"{mp3Path}\".";
             } else {
-                msg = $"Success to add {images.Length} cover(s) to mp3 file.";
+                msg = $"Success to add {images.Length} cover(s) to mp3 file \"{mp3Path}\".";
             }
-            MessageBox.Show(msg, "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(new Form { TopMost = true }, msg, "Mp3CoverDroper", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }
