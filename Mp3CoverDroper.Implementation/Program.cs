@@ -42,10 +42,10 @@ namespace Mp3CoverDroper.Implementation {
             Mp3 mp3;
             try {
                 mp3 = new Mp3(mp3Path, Mp3Permissions.ReadWrite);
-            } catch (Exception ex) {
+            } catch (UnauthorizedAccessException ex) {
                 var principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
-                if (!principal.IsInRole(WindowsBuiltInRole.Administrator)) {  // not in admin
-                    // try to get admin authority
+                if (!principal.IsInRole(WindowsBuiltInRole.Administrator)) {
+                    // not in admin, try to get admin authority
                     ProcessStartInfo psi = new ProcessStartInfo {
                         FileName = Application.ExecutablePath,
                         Arguments = string.Join(" ", args),
@@ -54,6 +54,9 @@ namespace Mp3CoverDroper.Implementation {
                     Process.Start(psi);
                     return;
                 }
+                ShowError($"You have no permission to write this mp3 file. Details:\n{ex}");
+                return;
+            } catch (Exception ex) {
                 ShowError($"Failed to read mp3 file. Details:\n{ex}");
                 return;
             }

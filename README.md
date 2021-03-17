@@ -10,20 +10,20 @@
 
 ### Compile
 
-+ If you are using VS Code and other command line tools such as `dotnet cli`:
++ If you are using command line tool such as `dotnet cli`:
 
 ```bash
 # Mp3CoverDroper.Extension project
 cd Mp3CoverDroper.Extension
 rm bin/ obj/ -rf
 dotnet msbuild -property:Configuration=Release -property:Platform=x64
-# Mp3CoverDroper.Extension -> xxx\Mp3CoverDroper\Mp3CoverDroper.Extension\bin\x64\Release\Mp3CoverDroper.Extension.dll
+# -> Mp3CoverDroper.Extension\bin\x64\Release\Mp3CoverDroper.Extension.dll
 
 # Mp3CoverDroper.Implementation project
 cd Mp3CoverDroper.Implementation
 rm bin/ obj/ -rf
 dotnet msbuild -property:Configuration=Release -property:Platform=x64
-# Mp3CoverDroper.Implementation -> xxx\Mp3CoverDroper\Mp3CoverDroper.Implementation\bin\x64\Release\Mp3CoverDroper.Implementation.exe
+# -> Mp3CoverDroper.Implementation\bin\x64\Release\Mp3CoverDroper.Implementation.exe
 ```
 
 + If you are using Visual Studio:
@@ -37,7 +37,7 @@ dotnet msbuild -property:Configuration=Release -property:Platform=x64
 + Note that you need to add the following into PATH.
     + `sn.exe` `ildasm.exe` (Program Files\Microsoft SDKs\Windows\vx.xA\bin\NETFX x.x Tools)
     + `ilasm.exe` `regasm.exe` (Windows\Microsoft.NET\Framework64\vx.x.x)
-+ Open cmd as administrator, and may need to restart explorer.exe.
++ Open cmd as administrator, and you may need to restart explorer.exe.
 
 ```bash
 Register.bat
@@ -47,7 +47,9 @@ cd Mp3CoverDroper.Extension\bin\x64\Release
 sn -k key.snk # generate key
 ildasm Mp3CoverDroper.Extension.dll /OUTPUT=Mp3CoverDroper.Extension.il
 ilasm Mp3CoverDroper.Extension.il /DLL /OUTPUT=Mp3CoverDroper.Extension.dll /KEY=key.snk # add key to dll
-regasm /codebase Mp3CoverDroper.Extension.dll # register (note that before replace the dll, you need to unregister it)
+regasm /codebase Mp3CoverDroper.Extension.dll # register
+
+# Note that before replace the dll, you need to unregister it first !!!
 ```
 
 + Finally, setup registry for Mp3CoverDroper.Implementation.

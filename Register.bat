@@ -1,10 +1,7 @@
 @echo off
 
-:: Register action is for extension Mp3CoverDroper.Extension's dll
-cd Mp3CoverDroper.Extension
-
 :: Generate Key
-cd bin\x64\Release
+cd Mp3CoverDroper.Extension\bin\x64\Release
 if not exist "key.snk" sn -k key.snk
 
 :: Recompile
